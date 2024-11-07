@@ -11,6 +11,10 @@ fastapi = {extras = ["standard"], version = "^0.115.0"}
 sqlalchemy = "^2.0.35"
 pydantic-settings = "^2.5.2"
 alembic = "^1.13.3"
+pwdlib = {extras = ["argon2"], version = "^0.2.1"}
+python-multipart = "^0.0.12"
+pyjwt = "^2.9.0"
+psycopg = {extras = ["binary"], version = "^3.2.3"}
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.6.8"
@@ -19,6 +23,9 @@ pytest-cov = "^5.0.0"
 taskipy = "^1.13.0"
 sqlmodel = "^0.0.22"
 psycopg = "^3.2.3"
+factory-boy = "^3.3.1"
+freezegun = "^1.5.1"
+testcontainers = "^4.8.2"
 
 [tool.pytest.ini_options]
 pythonpath = "."
@@ -43,7 +50,7 @@ preview = true
 run = "fastapi dev ./fastzero/app.py"
 
 pre_test = "task lint"
-test = "pytest -s -x -v --cov=fastzero"
+test = "pytest -s -vv --cov=fastzero"
 post_test = "coverage html"
 
 lint = "ruff check . && ruff check . --diff"

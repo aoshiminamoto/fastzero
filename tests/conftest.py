@@ -1,23 +1,95 @@
+import factory
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
+from testcontainers.postgres import PostgresContainer
 
 from fastzero.app import app
-from fastzero.models import table_registry
+from fastzero.database import get_session
+from fastzero.models import User, table_registry
+from fastzero.security import get_pasword_hash
+
+
+class UserFactory(factory.Factory):
+    class Meta:
+        model = User
+
+    username = factory.Sequence(lambda n: f"text{n}")
+    email = factory.LazyAttribute(lambda obj: f"{obj.username}@test.com")
+    password = factory.LazyAttribute(lambda obj: f"{obj.username}password")
 
 
 @pytest.fixture
-def client():
-    return TestClient(app)
+def client(session: Session):
+    def get_fake_session():
+        return session
+
+    app.dependency_overrides[get_session] = get_fake_session
+
+    with TestClient(app) as client:
+        yield client
+
+    app.dependency_overrides.clear()
+
+
+@pytest.fixture(scope="session")
+def engine():
+    with PostgresContainer("postgres:16", driver="psycopg") as postgres:
+        _engine = create_engine(postgres.get_connection_url())
+
+        with _engine.begin():
+            yield _engine
 
 
 @pytest.fixture
-def session():
-    engine = create_engine("sqlite:///:memory:")
+def session(engine):
     table_registry.metadata.create_all(engine)
 
     with Session(engine) as session:
         yield session
 
     table_registry.metadata.drop_all(engine)
+
+
+@pytest.fixture
+def user(session: Session) -> User:
+    pwd = "#1234"
+
+    user_test = User(**{
+        "email": "J@test.com",
+        "username": "joaozinho",
+        "password": get_pasword_hash(pwd),
+    })
+
+    session.add(user_test)
+
+    session.commit()
+    session.refresh(user_test)
+    user_test.clean_password = pwd  # Monkey Patch
+
+    return user_test
+
+
+@pytest.fixture
+def other_user(session: Session) -> User:
+    pwd = "#1234"
+
+    user_test = UserFactory(password=get_pasword_hash(pwd))
+    session.add(user_test)
+    session.commit()
+
+    session.refresh(user_test)
+    user_test.clean_password = pwd  # Monkey Patch
+
+    return user_test
+
+
+@pytest.fixture
+def token(client: TestClient, user: User) -> str:
+    response = client.post(
+        "/auth/token",
+        data={"username": user.username, "password": user.clean_password},
+    )
+
+    return response.json()["access_token"]
