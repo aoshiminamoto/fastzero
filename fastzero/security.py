@@ -29,7 +29,7 @@ def verify_password(password, hashed_password: str) -> bool:
 
 def create_access_token(data: dict) -> str:
     exp: datetime = datetime.now(tz=ZoneInfo("UTC"))
-    exp += timedelta(minutes=int(settings.ACCESSTOKENEXPIRE))
+    exp += timedelta(minutes=settings.ACCESSTOKENEXPIRE)
 
     to_encode = data.copy()
     to_encode.update({"exp": exp})
