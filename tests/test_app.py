@@ -8,3 +8,4 @@ def param_loop(request):
 
 def test_something(param_loop):
     print(param_loop)
+    return True
