@@ -10,10 +10,10 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      ALGORITHM: ${{ secrets.ALGORITHM }}
-      SECRET_KEY: ${{ secrets.SECRET_KEY }}
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      ACCESSTOKENEXPIRE: ${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTES }}
+      ALGORITHM: ${{secrets.ALGORITHM}}
+      SECRET_KEY: ${{secrets.SECRET_KEY}}
+      DATABASE_URL: ${{secrets.DATABASE_URL}}
+      ACCESSTOKENEXPIRE: ${{secrets.ACCESSTOKENEXPIRE}}
 
     steps:
       - name: Copia os arquivos do repositório
