@@ -9,4 +9,4 @@ class Settings(BaseSettings):  # pragma no cover
     ALGORITHM: str
     SECRET_KEY: str
     DATABASE_URL: str
-    ACCESSTOKENEXPIRE: int
+    ACCESSTOKENEXPIRE: str
