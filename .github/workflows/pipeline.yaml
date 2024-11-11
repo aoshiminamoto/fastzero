@@ -8,6 +8,15 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.12", "3.13"]
+
+    env:
+      ALGORITHM: ${{ secrets.ALGORITHM }}
+      SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      ACCESSTOKENEXPIRE: ${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTES }}
 
     steps:
       - name: Copia os arquivos do repositório
@@ -16,13 +25,13 @@ jobs:
       - name: Instalar o python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.13"
+          python-version: ${{ matrix.python-version }}
 
       - name: Instalar o poetry
         run: pipx install poetry
 
       - name: Instalar dependências
-        run: poetry install
+        run: poetry install --no-root
 
       - name: Executar testes
         run: poetry run task test
