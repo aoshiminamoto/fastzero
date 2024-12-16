@@ -1,39 +1,40 @@
 from http import HTTPStatus
 
-import factory.fuzzy
-
-from fastzero.models import Todo, TodoState
-
-
-class TodoFactory(factory.Factory):
-    class Meta:
-        model = Todo
-
-    user_id = 1
-    title = factory.Faker("text")
-    description = factory.Faker("text")
-    state = factory.fuzzy.FuzzyChoice(TodoState)
+from fastzero.factory import TodoFactory
+from fastzero.models import TodoState
+from fastzero.schemas import TodoPublic
 
 
-def test_create_todo(client, token):
+def test_create_todo(client, todo, token):
     response = client.post(
         "/todos/",
         headers={"Authorization": f"Bearer {token}"},
-        json={
-            "state": "draft",
-            "title": "Test todo",
-            "description": "Test todo description",
-        },
+        json=TodoPublic.model_validate(todo).model_dump(),
     )
 
+    todo.id += 1  # Monkey Patch
     assert response.status_code == HTTPStatus.CREATED
+    assert response.json() == TodoPublic.model_validate(todo).model_dump()
 
-    assert response.json() == {
-        "id": 1,
-        "state": "draft",
-        "title": "Test todo",
-        "description": "Test todo description",
-    }
+
+def test_read_todo_by_id(client, todo, token):
+    response = client.get(
+        "/todos/1",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == TodoPublic.model_validate(todo).model_dump()
+
+
+def test_read_todo_by_id_not_found(client, token):
+    response = client.get(
+        "/todos/0",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response.status_code == HTTPStatus.NOT_FOUND
+    assert response.json() == {"detail": "Todo not found"}
 
 
 def test_list_todos_should_return_5_todos(session, client, user, token):

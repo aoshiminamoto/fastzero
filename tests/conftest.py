@@ -1,4 +1,3 @@
-import factory
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
@@ -7,17 +6,10 @@ from testcontainers.postgres import PostgresContainer
 
 from fastzero.app import app
 from fastzero.database import get_session
+from fastzero.factory import TodoFactory, UserFactory
 from fastzero.models import User, table_registry
+from fastzero.schemas import TodoPublic
 from fastzero.security import get_pasword_hash
-
-
-class UserFactory(factory.Factory):
-    class Meta:
-        model = User
-
-    username = factory.Sequence(lambda n: f"text{n}")
-    email = factory.LazyAttribute(lambda obj: f"{obj.username}@test.com")
-    password = factory.LazyAttribute(lambda obj: f"{obj.username}password")
 
 
 @pytest.fixture
@@ -83,6 +75,22 @@ def other_user(session: Session) -> User:
     user_test.clean_password = pwd  # Monkey Patch
 
     return user_test
+
+
+@pytest.fixture
+def fake_todo(user: User) -> TodoPublic:
+    todo_test = TodoFactory(user_id=user.id)
+    return todo_test
+
+
+@pytest.fixture
+def todo(session: Session, fake_todo: TodoPublic) -> TodoPublic:
+    session.add(fake_todo)
+    session.commit()
+
+    session.refresh(fake_todo)
+
+    return fake_todo
 
 
 @pytest.fixture

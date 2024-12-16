@@ -67,6 +67,22 @@ def list_todos(
     return {"todos": todos}
 
 
+@router.get("/{todo_id}", response_model=TodoPublic, status_code=HTTPStatus.OK)
+def get_todo_by_id(
+    todo_id: int,
+    session: T_Session,
+    current_user: T_CurrentUser,
+) -> TodoPublic:
+    db_todo = session.scalar(select(Todo).where(Todo.id == todo_id))
+
+    if not db_todo:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail="Todo not found"
+        )
+
+    return db_todo
+
+
 @router.delete("/{todo_id}", response_model=Message)
 def delete_todo(todo_id: int, session: T_Session, user: T_CurrentUser):
     todo = session.scalar(
