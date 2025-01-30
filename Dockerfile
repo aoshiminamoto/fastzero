@@ -1,5 +1,6 @@
 FROM python:3.12-slim
 
+ENV TIMEZONE=Brazil/East
 ENV POETRY_VIRTUALENVS_CREATE=false
 
 WORKDIR /app

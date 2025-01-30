@@ -1,6 +1,8 @@
+from typing import Any, Generator
+
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
+from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import Session
 from testcontainers.postgres import PostgresContainer
 
@@ -13,7 +15,7 @@ from fastzero.security import get_pasword_hash
 
 
 @pytest.fixture
-def client(session: Session):
+def client(session: Session) -> Generator[TestClient, Any, None]:
     def get_fake_session():
         return session
 
@@ -26,7 +28,7 @@ def client(session: Session):
 
 
 @pytest.fixture(scope="session")
-def engine():
+def engine() -> Generator[Engine, Any, None]:
     with PostgresContainer("postgres:16", driver="psycopg") as postgres:
         _engine = create_engine(postgres.get_connection_url())
 
@@ -35,7 +37,7 @@ def engine():
 
 
 @pytest.fixture
-def session(engine):
+def session(engine) -> Generator[Session, Any, None]:
     table_registry.metadata.create_all(engine)
 
     with Session(engine) as session:

@@ -3,6 +3,7 @@ Apenas comentários do projeto
 
 docker ps
 docker init
+docker stats
 docker compose up
 docker compose down
 docker compose up --build
