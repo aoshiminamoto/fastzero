@@ -49,9 +49,7 @@ def get_current_user(
     )
 
     try:
-        payload = decode(
-            token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
-        )
+        payload = decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
 
         username: str = payload.get("sub")
 
@@ -66,9 +64,7 @@ def get_current_user(
     except PyJWTError:
         raise credentials_exception
 
-    user = session.scalar(
-        select(User).where(User.username == token_data.username)
-    )
+    user = session.scalar(select(User).where(User.username == token_data.username))
 
     if not user:
         raise credentials_exception

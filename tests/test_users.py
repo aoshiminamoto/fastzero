@@ -58,9 +58,7 @@ def test_read_user(client, user, token):
     )
 
     assert response.status_code == HTTPStatus.OK
-    assert response.json() == {
-        "users": [UserPublic.model_validate(user).model_dump()]
-    }
+    assert response.json() == {"users": [UserPublic.model_validate(user).model_dump()]}
 
 
 def test_read_user_by_id(client, user, token):

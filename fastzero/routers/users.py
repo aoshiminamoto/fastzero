@@ -1,7 +1,7 @@
-from http import HTTPStatus
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi import status as StatusCode
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -18,28 +18,26 @@ T_Session = Annotated[Session, Depends(get_session)]
 T_CurrentUser = Annotated[User, Depends(get_current_user)]
 
 
-@router.post("/", response_model=UserPublic, status_code=HTTPStatus.CREATED)
+@router.post("/", response_model=UserPublic, status_code=StatusCode.HTTP_201_CREATED)
 def create_user(
     user: UserSchema,
     session: T_Session,
 ) -> UserPublic:
     dbuser = session.scalar(
-        select(User).where(
-            (User.username == user.username) | (User.email == user.email)
-        )
+        select(User).where((User.username == user.username) | (User.email == user.email))
     )
 
     if dbuser:
         if dbuser.username == user.username:
             raise HTTPException(
                 detail="Username already exists",
-                status_code=HTTPStatus.BAD_REQUEST,
+                status_code=StatusCode.HTTP_400_BAD_REQUEST,
             )
 
         if dbuser.email == user.email:
             raise HTTPException(
                 detail="Email already exists",
-                status_code=HTTPStatus.BAD_REQUEST,
+                status_code=StatusCode.HTTP_400_BAD_REQUEST,
             )
 
     dbuser = User(
@@ -55,10 +53,10 @@ def create_user(
     return dbuser
 
 
-@router.get("/", response_model=UserList, status_code=HTTPStatus.OK)
+@router.get("/", response_model=UserList, status_code=StatusCode.HTTP_200_OK)
 def get_users(
-    session: T_Session,
     current_user: T_CurrentUser,
+    session: T_Session,
     limit: int = 20,
     offset: int = 0,
 ) -> UserList:
@@ -66,7 +64,7 @@ def get_users(
     return UserList(users=user_list)
 
 
-@router.get("/{user_id}", response_model=UserPublic, status_code=HTTPStatus.OK)
+@router.get("/{user_id}", response_model=UserPublic, status_code=StatusCode.HTTP_200_OK)
 def get_user_by_id(
     user_id: int,
     session: T_Session,
@@ -75,14 +73,12 @@ def get_user_by_id(
     dbuser = session.scalar(select(User).where(User.id == user_id))
 
     if not dbuser:
-        raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail="User not found"
-        )
+        raise HTTPException(status_code=StatusCode.HTTP_404_NOT_FOUND, detail="User not found")
 
     return dbuser
 
 
-@router.put("/{user_id}", response_model=UserPublic, status_code=HTTPStatus.OK)
+@router.put("/{user_id}", response_model=UserPublic, status_code=StatusCode.HTTP_200_OK)
 def update_user(
     user_id: int,
     user: UserSchema,
@@ -92,7 +88,7 @@ def update_user(
     if current_user.id != user_id:
         raise HTTPException(
             detail="Not enough permissions",
-            status_code=HTTPStatus.FORBIDDEN,
+            status_code=StatusCode.HTTP_403_FORBIDDEN,
         )
 
     current_user.password = get_pasword_hash(current_user.password)
@@ -103,7 +99,7 @@ def update_user(
     return current_user
 
 
-@router.delete("/{user_id}", response_model=Message, status_code=HTTPStatus.OK)
+@router.delete("/{user_id}", response_model=Message, status_code=StatusCode.HTTP_200_OK)
 def delete_user(
     user_id: int,
     session: T_Session,
@@ -112,7 +108,7 @@ def delete_user(
     if current_user.id != user_id:
         raise HTTPException(
             detail="Not enough permissions",
-            status_code=HTTPStatus.FORBIDDEN,
+            status_code=StatusCode.HTTP_403_FORBIDDEN,
         )
 
     session.delete(current_user)

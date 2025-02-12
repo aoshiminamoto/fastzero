@@ -1,7 +1,7 @@
-from http import HTTPStatus
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import status as StatusCode
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -24,7 +24,7 @@ T_Session = Annotated[Session, Depends(get_session)]
 T_CurrentUser = Annotated[User, Depends(get_current_user)]
 
 
-@router.post("/", response_model=TodoPublic, status_code=HTTPStatus.CREATED)
+@router.post("/", response_model=TodoPublic, status_code=StatusCode.HTTP_201_CREATED)
 def create_todo(
     todo: TodoSchema,
     session: T_Session,
@@ -43,7 +43,7 @@ def create_todo(
     return db_todo
 
 
-@router.get("/", response_model=TodoList)
+@router.get("/", response_model=TodoList, status_code=StatusCode.HTTP_200_OK)
 def list_todos(
     user: T_CurrentUser,
     session: T_Session,
@@ -60,14 +60,12 @@ def list_todos(
     if filters.state:
         query = query.filter(Todo.state == filters.state)
 
-    todos = session.scalars(
-        query.offset(filters.offset).limit(filters.limit)
-    ).all()
+    todos = session.scalars(query.offset(filters.offset).limit(filters.limit)).all()
 
     return {"todos": todos}
 
 
-@router.get("/{todo_id}", response_model=TodoPublic, status_code=HTTPStatus.OK)
+@router.get("/{todo_id}", response_model=TodoPublic, status_code=StatusCode.HTTP_200_OK)
 def get_todo_by_id(
     todo_id: int,
     session: T_Session,
@@ -76,23 +74,17 @@ def get_todo_by_id(
     db_todo = session.scalar(select(Todo).where(Todo.id == todo_id))
 
     if not db_todo:
-        raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail="Todo not found"
-        )
+        raise HTTPException(status_code=StatusCode.HTTP_404_NOT_FOUND, detail="Todo not found")
 
     return db_todo
 
 
-@router.delete("/{todo_id}", response_model=Message)
+@router.delete("/{todo_id}", response_model=Message, status_code=StatusCode.HTTP_200_OK)
 def delete_todo(todo_id: int, session: T_Session, user: T_CurrentUser):
-    todo = session.scalar(
-        select(Todo).where(Todo.user_id == user.id, Todo.id == todo_id)
-    )
+    todo = session.scalar(select(Todo).where(Todo.user_id == user.id, Todo.id == todo_id))
 
     if not todo:
-        raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail="Task not found."
-        )
+        raise HTTPException(status_code=StatusCode.HTTP_404_NOT_FOUND, detail="Task not found.")
 
     session.delete(todo)
     session.commit()
@@ -100,21 +92,17 @@ def delete_todo(todo_id: int, session: T_Session, user: T_CurrentUser):
     return {"message": "Task has been deleted successfully."}
 
 
-@router.patch("/{todo_id}", response_model=TodoPublic)
+@router.patch("/{todo_id}", response_model=TodoPublic, status_code=StatusCode.HTTP_200_OK)
 def patch_todo(
     todo_id: int,
     todo: TodoUpdate,
     session: T_Session,
     user: T_CurrentUser,
 ):
-    db_todo = session.scalar(
-        select(Todo).where(Todo.user_id == user.id, Todo.id == todo_id)
-    )
+    db_todo = session.scalar(select(Todo).where(Todo.user_id == user.id, Todo.id == todo_id))
 
     if not db_todo:
-        raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail="Task not found."
-        )
+        raise HTTPException(status_code=StatusCode.HTTP_404_NOT_FOUND, detail="Task not found.")
 
     for key, value in todo.model_dump(exclude_unset=True).items():
         setattr(db_todo, key, value)
