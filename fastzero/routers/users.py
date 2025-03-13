@@ -19,13 +19,8 @@ T_CurrentUser = Annotated[User, Depends(get_current_user)]
 
 
 @router.post("/", response_model=UserPublic, status_code=StatusCode.HTTP_201_CREATED)
-def create_user(
-    user: UserSchema,
-    session: T_Session,
-) -> UserPublic:
-    dbuser = session.scalar(
-        select(User).where((User.username == user.username) | (User.email == user.email))
-    )
+def create_user(user: UserSchema, session: T_Session) -> UserPublic:
+    dbuser = session.scalar(select(User).where((User.username == user.username) | (User.email == user.email)))
 
     if dbuser:
         if dbuser.username == user.username:
@@ -54,22 +49,13 @@ def create_user(
 
 
 @router.get("/", response_model=UserList, status_code=StatusCode.HTTP_200_OK)
-def get_users(
-    current_user: T_CurrentUser,
-    session: T_Session,
-    limit: int = 20,
-    offset: int = 0,
-) -> UserList:
+def get_users(current_user: T_CurrentUser, session: T_Session, limit: int = 20, offset: int = 0) -> UserList:
     user_list = session.scalars(select(User).limit(limit).offset(offset))
     return UserList(users=user_list)
 
 
 @router.get("/{user_id}", response_model=UserPublic, status_code=StatusCode.HTTP_200_OK)
-def get_user_by_id(
-    user_id: int,
-    session: T_Session,
-    current_user: T_CurrentUser,
-) -> UserPublic:
+def get_user_by_id(user_id: int, session: T_Session, current_user: T_CurrentUser) -> UserPublic:
     dbuser = session.scalar(select(User).where(User.id == user_id))
 
     if not dbuser:
@@ -79,12 +65,7 @@ def get_user_by_id(
 
 
 @router.put("/{user_id}", response_model=UserPublic, status_code=StatusCode.HTTP_200_OK)
-def update_user(
-    user_id: int,
-    user: UserSchema,
-    session: T_Session,
-    current_user: T_CurrentUser,
-) -> UserPublic:
+def update_user(user_id: int, user: UserSchema, session: T_Session, current_user: T_CurrentUser) -> UserPublic:
     if current_user.id != user_id:
         raise HTTPException(
             detail="Not enough permissions",
@@ -100,11 +81,7 @@ def update_user(
 
 
 @router.delete("/{user_id}", response_model=Message, status_code=StatusCode.HTTP_200_OK)
-def delete_user(
-    user_id: int,
-    session: T_Session,
-    current_user: T_CurrentUser,
-) -> Message:
+def delete_user(user_id: int, session: T_Session, current_user: T_CurrentUser) -> Message:
     if current_user.id != user_id:
         raise HTTPException(
             detail="Not enough permissions",

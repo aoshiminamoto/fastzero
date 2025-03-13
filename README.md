@@ -22,5 +22,6 @@ alembic revision --autogenerate -m "commentary"
 gh secret set -f .env
 gh repo create projectName
 
+uvicorn fastzero.app:app --workers 3 --host 0.0.0.0 --port 9001
 
 poetry export --without-hashes --without dev -f requirements.txt -o requirements.txt

@@ -78,9 +78,7 @@ def test_list_todos_filter_title_should_return_5_todos(session, user, client, to
 
 def test_list_todos_filter_description_should_return_5_todos(session, user, client, token):
     expected_todos = 5
-    session.bulk_save_objects(
-        TodoFactory.create_batch(5, user_id=user.id, description="description")
-    )
+    session.bulk_save_objects(TodoFactory.create_batch(5, user_id=user.id, description="description"))
     session.commit()
 
     response = client.get(

@@ -25,17 +25,14 @@ T_CurrentUser = Annotated[User, Depends(get_current_user)]
 
 
 @router.post("/", response_model=TodoPublic, status_code=StatusCode.HTTP_201_CREATED)
-def create_todo(
-    todo: TodoSchema,
-    session: T_Session,
-    user: T_CurrentUser,
-):
+def create_todo(todo: TodoSchema, session: T_Session, user: T_CurrentUser) -> TodoPublic:
     db_todo = Todo(
         title=todo.title,
         description=todo.description,
         state=todo.state,
         user_id=user.id,
     )
+
     session.add(db_todo)
     session.commit()
     session.refresh(db_todo)
@@ -44,11 +41,7 @@ def create_todo(
 
 
 @router.get("/", response_model=TodoList, status_code=StatusCode.HTTP_200_OK)
-def list_todos(
-    user: T_CurrentUser,
-    session: T_Session,
-    filters: TFilters,
-):
+def list_todos(user: T_CurrentUser, session: T_Session, filters: TFilters) -> TodoList:
     query = select(Todo).where(Todo.user_id == user.id)
 
     if filters.title:
@@ -66,11 +59,7 @@ def list_todos(
 
 
 @router.get("/{todo_id}", response_model=TodoPublic, status_code=StatusCode.HTTP_200_OK)
-def get_todo_by_id(
-    todo_id: int,
-    session: T_Session,
-    current_user: T_CurrentUser,
-) -> TodoPublic:
+def get_todo_by_id(todo_id: int, session: T_Session, current_user: T_CurrentUser) -> TodoPublic:
     db_todo = session.scalar(select(Todo).where(Todo.id == todo_id))
 
     if not db_todo:
@@ -80,7 +69,7 @@ def get_todo_by_id(
 
 
 @router.delete("/{todo_id}", response_model=Message, status_code=StatusCode.HTTP_200_OK)
-def delete_todo(todo_id: int, session: T_Session, user: T_CurrentUser):
+def delete_todo(todo_id: int, session: T_Session, user: T_CurrentUser) -> Message:
     todo = session.scalar(select(Todo).where(Todo.user_id == user.id, Todo.id == todo_id))
 
     if not todo:
@@ -93,12 +82,7 @@ def delete_todo(todo_id: int, session: T_Session, user: T_CurrentUser):
 
 
 @router.patch("/{todo_id}", response_model=TodoPublic, status_code=StatusCode.HTTP_200_OK)
-def patch_todo(
-    todo_id: int,
-    todo: TodoUpdate,
-    session: T_Session,
-    user: T_CurrentUser,
-):
+def patch_todo(todo_id: int, todo: TodoUpdate, session: T_Session, user: T_CurrentUser) -> TodoPublic:
     db_todo = session.scalar(select(Todo).where(Todo.user_id == user.id, Todo.id == todo_id))
 
     if not db_todo:
