@@ -49,7 +49,7 @@ preview = true
 [tool.taskipy.tasks]
 run = "fastapi dev ./fastzero/app.py"
 
-pre_test = "task lint"
+pre_test = "task format && task lint"
 test = "pytest -s -vv --cov=fastzero"
 post_test = "coverage html"
 
