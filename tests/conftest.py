@@ -8,10 +8,10 @@ from testcontainers.postgres import PostgresContainer
 
 from fastzero.app import app
 from fastzero.database import get_session
-from fastzero.factory import TodoFactory, UserFactory
 from fastzero.models import User, table_registry
+from fastzero.factories import TodoFactory, UserFactory
 from fastzero.schemas import TodoPublic
-from fastzero.security import get_pasword_hash
+from fastzero.security import get_password_hash
 
 
 @pytest.fixture
@@ -53,7 +53,7 @@ def user(session: Session) -> User:
     user_test = User(**{
         "email": "J@test.com",
         "username": "joaozinho",
-        "password": get_pasword_hash(pwd),
+        "password": get_password_hash(pwd),
     })
 
     session.add(user_test)
@@ -69,7 +69,7 @@ def user(session: Session) -> User:
 def other_user(session: Session) -> User:
     pwd = "#1234"
 
-    user_test = UserFactory(password=get_pasword_hash(pwd))
+    user_test = UserFactory(password=get_password_hash(pwd))
     session.add(user_test)
     session.commit()
 

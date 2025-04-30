@@ -19,7 +19,7 @@ pwd_context = PasswordHash.recommended()
 oauth_schema = OAuth2PasswordBearer(tokenUrl="auth/token")
 
 
-def get_pasword_hash(password: str) -> str:
+def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
 
