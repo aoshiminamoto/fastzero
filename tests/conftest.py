@@ -8,8 +8,8 @@ from testcontainers.postgres import PostgresContainer
 
 from fastzero.app import app
 from fastzero.database import get_session
-from fastzero.models import User, table_registry
 from fastzero.factories import TodoFactory, UserFactory
+from fastzero.models import User, table_registry
 from fastzero.schemas import TodoPublic
 from fastzero.security import get_password_hash
 

@@ -1,7 +1,7 @@
 from http import HTTPStatus
 
-from fastzero.models import TodoState
 from fastzero.factories import TodoFactory
+from fastzero.models import TodoState
 from fastzero.schemas import TodoPublic
 
 

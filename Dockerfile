@@ -1,5 +1,7 @@
-FROM python:3.12-slim
+FROM python:3.12-alpine3.22
 
+ENV LANG=pt_BR.UTF-8 
+ENV LANGUAGE=pt_BR.UTF-8 
 ENV TIMEZONE=Brazil/East
 ENV POETRY_VIRTUALENVS_CREATE=false
 
